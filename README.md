@@ -1,6 +1,6 @@
-#Dog Breed Classification with AWS SageMaker
+Dog Breed Classification with AWS SageMaker
 
-##Overview
+Overview
 
 Fine tuning a pre-trained ResNet model for dog breed classification using AWS SageMaker. The project demonstrates a full MLOps workflow from data preparation to deployment, including hyperparameter tuning, profiling, and real-time inference.The model is trained using transfer learning to classify dog breeds from images, monitored with SageMaker Debugger and Profiler, and deployed to a live endpoint for predictions.
 
