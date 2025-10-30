@@ -78,7 +78,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, devic
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
-        print(f"Epoch {i}: Train loss = {train_loss:.6f}")
+        print(f"Epoch {i}: train_loss = {train_loss:.6f}")
         
         if hook is not None:
             hook.set_mode(smd.modes.EVAL)
