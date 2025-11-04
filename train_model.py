@@ -24,10 +24,10 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 # Evaluation Function
 
-def test(model, test_loader, criterion, hook=None):
+def test(model, test_loader, criterion, device, hook=None):
     '''
     Evaluate the model on the test dataset.
-    Runs model in evaluation mode on CPU.
+    Runs model in evaluation mode on device.
     Computes average loss and accuracy without gradient updates.
     Prints performance metrics to console and logger.
     '''
@@ -40,13 +40,15 @@ def test(model, test_loader, criterion, hook=None):
     model.eval()
     with torch.no_grad():
         for (data, target) in test_loader:
+            data = data.to(device, non_blocking=True)
+            target = target.to(device, non_blocking=True)
             outputs = model(data)
             loss = criterion(outputs, target)
             test_loss += loss.item()
             pred = outputs.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
             
-    test_loss = test_loss/len(train_loader.dataset)
+    test_loss = test_loss/len(test_loader.dataset)
     print(f"test_loss={test_loss:.6f};")
     print(f"test_accuracy={correct / len(test_loader.dataset)};")
     logger.info("Evaluation complete.")
@@ -68,13 +70,11 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, devic
         model.train()
 
         for data, target in train_loader:
-            data = data.to(device)
-            target = target.to(device)
+            data = data.to(device, non_blocking=True)
+            target = target.to(device, non_blocking=True)
             optimizer.zero_grad()
             outputs = model(data)
             loss = criterion(outputs, target)
-            if hook is not None:
-                hook.record_tensor_value(tensor_name="train_loss", tensor_value=loss.item())
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
@@ -86,8 +86,8 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, devic
         model.eval()
         with torch.no_grad():
             for data, target in valid_loader:
-                data = data.to(device)
-                target = target.to(device)
+                data = data.to(device, non_blocking=True)
+                target = target.to(device, non_blocking=True)
                 outputs = model(data)
                 loss = criterion(outputs, target)
                 val_loss += loss.item()
@@ -114,7 +114,7 @@ def net(num_classes, device):
     logger.info("Model creation complete.")
     return model
 
-def create_data_loaders(data, batch_size, shuffle=True):
+def create_data_loader(data, batch_size, shuffle=True):
     '''
     Create a PyTorch DataLoader for batching and shuffling data.
     Organizes input data into mini-batches for efficient training.
@@ -139,7 +139,7 @@ def main(args):
     '''
     Create loss and optimizer
     '''
-    loss_criterion = nn.CrossEntropyLoss()
+    loss_criterion = nn.CrossEntropyLoss().to(args.device)
     hook = None
     if smd is not None:
         try:
@@ -189,12 +189,12 @@ def main(args):
     Call the train function to start training your model
     Remember that you will need to set up a way to get training data from S3
     '''
-    train(model, train_loader, valid_loader, loss_criterion, optimizer, args.epochs, args.device,hook=hook)
+    train(model, train_loader, valid_loader, loss_criterion, optimizer, args.epochs, args.device, hook=hook)
     
     '''
     Test the model to see its accuracy
     '''
-    test(model, test_loader, loss_criterion,hook=hook)
+    test(model, test_loader, loss_criterion, args.device, hook=hook)
     
     '''
     Save the trained model
@@ -207,6 +207,7 @@ def main(args):
     logger.info("Model saved.")
 
 if __name__ == '__main__':
+    
     parser = argparse.ArgumentParser(description="Train dog-breed classifier")
 
     parser.add_argument("--batch_size", type=int, default=16, help="Mini-batch size")
