@@ -63,7 +63,7 @@ labels.json → Class index-to-name mapping for readable predictions.
 
 | Hyperparameter | Range Tested | Best Value |
 |--------|--------------|--------|
-| Learning Rate | [1e-4, 1e-2] | 0.0044 |
+| Learning Rate | [1e-4, 1e-2] | 0.0003 |
 |Batch Size | [8, 32] | 29 |
 |Epochs | [3, 10] | 9 |
 
