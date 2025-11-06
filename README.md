@@ -69,7 +69,13 @@ labels.json → Class index-to-name mapping for readable predictions.
 
 Objective metric: val_loss
 
+![training jobs](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/ba0a09ce5227cea8a9814e81b78736704a197442/images/training%20jobs.png))
+
+
 The best model was automatically selected by SageMaker.
+![Hyperparameters of Best Training Job](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/ba0a09ce5227cea8a9814e81b78736704a197442/images/Hyperparameters%20of%20best%20training%20job.png))
+
+
 
 ## Profiler Highlights:
 
@@ -82,6 +88,10 @@ CPUBottleneck triggered 5 times → data preprocessing slower than GPU compute.
 Dataloader rule flagged only 1 worker for 4 CPU cores.
 
 No issues found for Overfit, VanishingGradient, or LoadBalancing.
+
+![Timeline Charts]([image-url "Optional title"](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/ba0a09ce5227cea8a9814e81b78736704a197442/images/Profiler%20Timeline%20Charts.png))
+
+
 
 ## Model Deployment
 
@@ -101,6 +111,8 @@ model = PyTorchModel(
 
 predictor = model.deploy(initial_instance_count=1, instance_type="ml.m5.xlarge")
 ```
+![Model End Point](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/ba0a09ce5227cea8a9814e81b78736704a197442/images/model%20end%20point.png))
+
 
 ## Inference Example
 
