@@ -75,7 +75,23 @@ Objective metric: val_loss
 The best model was automatically selected by SageMaker.
 ![Hyperparameters of Best Training Job](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/ba0a09ce5227cea8a9814e81b78736704a197442/images/Hyperparameters%20of%20best%20training%20job.png))
 
+## Training Summary
 
+| Metric |Value |
+|--------|--------------|
+| Epochs | 8 completed |
+|Final Validation Loss | 13.28 | 
+|Final Test Loss | 0.01569 | 
+|Final Test Accuracy | ~86.8% | 
+|Training Time | ~24 mins (1437 sec) | 
+
+This shows the model trained smoothly, converged, and validated well.
+
+### Model Behavior Observations
+1. Training loss steadily dropped epoch-to-epoch.
+
+2. Validation loss also declined consistently.
+3. ~87% on the dog breed task (133 classes!) 
 
 ## Profiler Highlights:
 
@@ -88,6 +104,8 @@ CPUBottleneck triggered 5 times → data preprocessing slower than GPU compute.
 Dataloader rule flagged only 1 worker for 4 CPU cores.
 
 No issues found for Overfit, VanishingGradient, or LoadBalancing.
+
+Expected to find issues in PoorWeightInitialization since pretrained model with frozen layers triggers heuristic
 
 ![Timeline Charts]([image-url "Optional title"](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/ba0a09ce5227cea8a9814e81b78736704a197442/images/Profiler%20Timeline%20Charts.png))
 
