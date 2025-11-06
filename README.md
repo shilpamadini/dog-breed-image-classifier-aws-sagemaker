@@ -41,6 +41,7 @@ S3_BUCKET = sess.default_bucket()
 DATA_PREFIX = "dogimages"
 input_data_path = sess.upload_data(path="dogImages", bucket=S3_BUCKET, key_prefix=DATA_PREFIX)
 ```
+![S3 Folders](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/53cbf6088f654b8fc7d8142d0ddfc5d5c09242ab/images/s3%20bucket%20folder%20structure%20.png)
 
 ### Training Script Files
 
