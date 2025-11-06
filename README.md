@@ -1,29 +1,141 @@
 # Dog Breed Classification with AWS SageMaker
 
-## Overview
+##  Introduction
+This project trains, tunes, and deploys a ResNet-50 convolutional neural network to classify dog breeds.  
+It demonstrates a complete end-to-end ML workflow on Amazon SageMaker
 
-Fine tuning a pre-trained ResNet model for dog breed classification using AWS SageMaker. The project demonstrates a full MLOps workflow from data preparation to deployment, including hyperparameter tuning, profiling, and real-time inference.The model is trained using transfer learning to classify dog breeds from images, monitored with SageMaker Debugger and Profiler, and deployed to a live endpoint for predictions.
+The end-to-end ML workflow is built entirely on Amazon SageMaker, leveraging:
 
-## Steps:
+Hyperparameter Optimization (HPO) for fine-tuning model performance.
 
-1. Prepared and Uploaded Data to S3
-Downloaded the dog breed classification dataset (available online as a public example dataset for image classification), organized it into training and validation splits, and uploaded it to an S3 bucket for SageMaker access.
+SageMaker Debugger & Profiler for detecting system bottlenecks and training inefficiencies.
 
-2. Fine Tuned a Pre Trained ResNet Model
-Used transfer learning to improve model performance on dog breed classification.
+Model Deployment to a real-time inference endpoint for prediction.
 
-3. Configured and Launched SageMaker Training Jobs
-Tracked metrics, saved artifacts, and ensured reproducibility using training scripts.
+The model can identify one of 133 dog breeds from a single image and return top-k probabilities.
 
-4. Ran Hyperparameter Tuning (HPO)
-Used SageMaker Tuner to search for optimal learning parameters and selected the best performing model configuration.
 
-5. Enabled Debugger and Profiler
-Monitored training behavior, performance bottlenecks, and system utilization for optimization insights.
+# Project Setup Instructions
 
-6. Deployed Trained Model to a SageMaker Endpoint
-Packaged the best model and created a managed inference endpoint.
+## Environment Setup
 
-7. Performed Real Time Inference on Test Images
+```
+pip install sagemaker smdebug boto3 torch torchvision
+```
 
-8. Queried the endpoint from the inference notebook and validated predictions.
+## Data Download
+
+```
+!wget https://s3-us-west-1.amazonaws.com/udacity-aind/dog-project/dogImages.zip
+!unzip dogImages.zip
+```
+
+## The dataset contains folders for train, valid, and test.
+
+### Upload to S3
+
+```
+from sagemaker import Session
+sess = Session()
+S3_BUCKET = sess.default_bucket()
+DATA_PREFIX = "dogimages"
+input_data_path = sess.upload_data(path="dogImages", bucket=S3_BUCKET, key_prefix=DATA_PREFIX)
+```
+
+### Training Script Files
+
+train_model.py → Main training script for profiling and debugging.
+
+hpo.py → Training script used for Hyperparameter Tuning.
+
+inference.py → Defines model loading, input/output handlers, and prediction logic.
+
+train_deploy.ipynb → Jupyter notebook orchestrating data prep, training, tuning, profiling, and deployment.
+
+model.pth → Saved trained weights.
+
+labels.json → Class index-to-name mapping for readable predictions.
+
+##  Model Training and Hyperparameter Tuning
+
+## Key Tuned Hyperparameters
+
+| Hyperparameter | Range Tested | Best Value |
+|--------|--------------|--------|
+| Learning Rate | [1e-4, 1e-2] | 0.0044 |
+|Batch Size | [8, 32] | 29 |
+|Epochs | [3, 10] | 9 |
+
+Objective metric: val_loss
+
+The best model was automatically selected by SageMaker.
+
+## Profiler Highlights:
+
+GPUMemoryIncrease triggered 95 times (mild fluctuation, normal behavior).
+
+LowGPUUtilization / BatchSize triggered 15–16 times, GPU underutilized due to small batch size or CPU delays.
+
+CPUBottleneck triggered 5 times → data preprocessing slower than GPU compute.
+
+Dataloader rule flagged only 1 worker for 4 CPU cores.
+
+No issues found for Overfit, VanishingGradient, or LoadBalancing.
+
+## Model Deployment
+
+After training, the model artifact (model.tar.gz) was deployed to a real-time endpoint using:
+
+```
+from sagemaker.pytorch import PyTorchModel
+
+model = PyTorchModel(
+    entry_point="inference.py",
+    source_dir=".",
+    role=role,
+    model_data=s3_model_path,
+    framework_version="1.13",
+    py_version="py39"
+)
+
+predictor = model.deploy(initial_instance_count=1, instance_type="ml.m5.xlarge")
+```
+
+## Inference Example
+
+An image from S3 was sent to the endpoint:
+s3://sagemaker-us-east-1-106660882488/dogimages/test/001.Affenpinscher/Affenpinscher_00003.jpg
+
+```
+import boto3
+import io
+from PIL import Image
+
+s3 = boto3.client("s3")
+bucket = "sagemaker-us-east-1-106660882488"
+key = "dogimages/test/001.Affenpinscher/Affenpinscher_00003.jpg"
+
+img_bytes = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+result = predictor.predict(img_bytes)
+print(result)
+
+```
+
+## Output
+
+```
+{
+  "topk_labels": [
+    "001.Affenpinscher",
+    "042.Cairn_terrier",
+    "036.Briard",
+    "026.Black_russian_terrier",
+    "033.Bouvier_des_flandres"
+  ],
+  "topk_probs": [
+    0.9820, 0.0055, 0.0027, 0.0023, 0.0019
+  ]
+}
+
+```
+Prediction: The model correctly classified the image as an **Affenpins
