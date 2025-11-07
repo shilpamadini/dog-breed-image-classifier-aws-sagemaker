@@ -107,7 +107,7 @@ No issues found for Overfit, VanishingGradient, or LoadBalancing.
 
 Expected to find issues in PoorWeightInitialization since pretrained model with frozen layers triggers heuristic
 
-![Timeline Charts]([image-url "Optional title"](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/ba0a09ce5227cea8a9814e81b78736704a197442/images/Profiler%20Timeline%20Charts.png))
+![Timeline Charts](https://github.com/shilpamadini/dog-breed-image-classifier-aws-sagemaker/blob/ba0a09ce5227cea8a9814e81b78736704a197442/images/Profiler%20Timeline%20Charts.png))
 
 
 
